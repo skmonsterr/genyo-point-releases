@@ -1,211 +1,320 @@
 # Genyo Point Automation
+<!-- GENYO_LATEST_VERSION: v1.0.5 -->
 
-Genyo Point Automation e um aplicativo para Windows que ajuda a executar e agendar o registro de ponto no Genyo a partir do seu computador.
+Genyo Point Automation is a Windows desktop app for running and scheduling Genyo clock-in and clock-out operations from your computer.
 
-Ele foi pensado para uso diario, com tela simples, configuracao local, modo de teste seguro, execucao em segundo plano e aviso de atualizacoes.
+The app is designed for daily use with local settings, Safe Mode testing, Real Mode execution, background scheduling, Windows notifications, activity logs, and automatic updates through GitHub Releases.
 
-## Para que serve
+## What You Can Do
 
-Com o aplicativo voce pode:
+With the app you can:
 
-- configurar seus dados de acesso ao Genyo;
-- testar o fluxo de entrada e saida sem registrar ponto;
-- executar entrada ou saida manualmente quando necessario;
-- deixar o Scheduler ativo para rodar nos horarios configurados;
-- acompanhar logs simples pela tela do aplicativo;
-- receber notificacoes do Windows quando o Scheduler iniciar uma operacao;
-- atualizar o aplicativo quando uma nova versao estiver disponivel.
+- configure your Genyo access details;
+- test clock-in and clock-out in Safe Mode before submitting a real record;
+- run Clock In or Clock Out manually when needed;
+- keep the Scheduler active in the background;
+- see the last and next scheduled operations;
+- receive Windows notifications when scheduled operations run;
+- check for and install app updates.
 
-## Instalacao
+## Download Files
 
-1. Abra a pagina de Releases deste repositorio.
-2. Baixe o instalador mais recente do Windows.
-3. O arquivo segue este padrao de nome:
-
-```text
-genyo-point-automation-setup-v<versao>-win32-x64.exe
-```
-
-4. Execute o instalador.
-5. Escolha a pasta de instalacao quando o instalador solicitar.
-6. Abra o aplicativo pelo atalho criado no Windows.
-
-Nao e necessario baixar arquivos como `latest.yml` ou `.blockmap`. Eles sao usados internamente pelo sistema de atualizacao.
-
-## Primeira configuracao
-
-Ao abrir o aplicativo pela primeira vez, clique em **Configurar**.
-
-Preencha os campos obrigatorios no arquivo de configuracao exibido pela tela:
+Open the latest release page:
 
 ```text
-GENYO_COMPANY_CODE=
-GENYO_ACCESS_NUMBER=
-TWOCAPTCHA_API_KEY=
+https://github.com/skmonsterr/genyo-point-releases/releases/latest
 ```
 
-Essas informacoes sao necessarias para que o aplicativo consiga acessar o Genyo e executar o fluxo corretamente.
+Current latest version: `v1.0.5`.
 
-Tambem revise estes campos:
+Download these two files:
 
 ```text
-HEADLESS=true
-SCHEDULE_ENTRY=0 9 * * 1-5
-SCHEDULE_EXIT=0 18 * * 1-5
-TIMEZONE=America/Sao_Paulo
+genyo-point-automation-setup-v<version>-win32-x64.exe
+genyo-self-signed-code-signing.cer
 ```
 
-Uso recomendado:
+You do not need to download `latest.yml` or `.blockmap`. Those files are used internally by the auto-update system.
 
-- `HEADLESS=true`: executa o navegador em segundo plano, recomendado para uso diario.
-- `SCHEDULE_ENTRY`: horario agendado para entrada.
-- `SCHEDULE_EXIT`: horario agendado para saida.
-- `TIMEZONE`: fuso horario usado pelo agendamento.
+## Before Installing
 
-Depois de editar, clique em **Salvar**.
+Run PowerShell as Administrator:
 
-Se precisar acompanhar visualmente o navegador durante um teste, altere temporariamente para `HEADLESS=false`. Para o uso diario com Scheduler, mantenha `HEADLESS=true`.
+1. Open the Start menu.
+2. Search for `PowerShell`.
+3. Right-click **Windows PowerShell**.
+4. Click **Run as administrator**.
 
-## Modos do aplicativo
+The examples below assume both files are in your Downloads folder and use the current latest version shown above.
 
-O aplicativo possui dois modos principais.
+### 1. Validate the Setup Before Trusting the Certificate
+
+Run:
+
+```powershell
+Get-AuthenticodeSignature "$env:USERPROFILE\Downloads\genyo-point-automation-setup-v1.0.5-win32-x64.exe" | Format-List
+```
+
+Expected result before installing the certificate:
+
+```text
+SignerCertificate      : [certificate information]
+TimeStamperCertificate :
+Status                 : UnknownError
+StatusMessage          : A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.
+Path                   : C:\Users\<your-user>\Downloads\genyo-point-automation-setup-v1.0.5-win32-x64.exe
+SignatureType          : Authenticode
+IsOSBinary             : False
+```
+
+The important point is: before trusting the `.cer`, the file may be signed but Windows does not trust the certificate yet.
+
+### 2. Install the Public Certificate
+
+Run both commands in the same Administrator PowerShell window:
+
+```powershell
+Import-Certificate `
+  -FilePath "$env:USERPROFILE\Downloads\genyo-self-signed-code-signing.cer" `
+  -CertStoreLocation "Cert:\CurrentUser\Root"
+```
+
+Expected result:
+
+```text
+PSParentPath: Microsoft.PowerShell.Security\Certificate::CurrentUser\Root
+
+Thumbprint                                Subject
+----------                                -------
+<certificate-thumbprint>                  CN=Genyo Point Automation Test
+```
+
+Then run:
+
+```powershell
+Import-Certificate `
+  -FilePath "$env:USERPROFILE\Downloads\genyo-self-signed-code-signing.cer" `
+  -CertStoreLocation "Cert:\CurrentUser\TrustedPublisher"
+```
+
+Expected result:
+
+```text
+PSParentPath: Microsoft.PowerShell.Security\Certificate::CurrentUser\TrustedPublisher
+
+Thumbprint                                Subject
+----------                                -------
+<certificate-thumbprint>                  CN=Genyo Point Automation Test
+```
+
+### 3. Validate the Setup Again
+
+Run:
+
+```powershell
+Get-AuthenticodeSignature "$env:USERPROFILE\Downloads\genyo-point-automation-setup-v1.0.5-win32-x64.exe" | Format-List
+```
+
+Expected result after installing the certificate:
+
+```text
+SignerCertificate      : [certificate information]
+TimeStamperCertificate :
+Status                 : Valid
+StatusMessage          : Signature verified.
+Path                   : C:\Users\<your-user>\Downloads\genyo-point-automation-setup-v1.0.5-win32-x64.exe
+SignatureType          : Authenticode
+IsOSBinary             : False
+```
+
+The important point is: `Status` should be `Valid` before you run the installer.
+
+## Install the App
+
+After the signature is valid:
+
+1. Run `genyo-point-automation-setup-v<version>-win32-x64.exe`.
+2. Choose the installation folder when Windows asks.
+3. Finish the installation.
+4. Open **Genyo Point Automation** from the Windows shortcut.
+
+If Windows still shows a SmartScreen warning, confirm that the signature status is `Valid` and that the file was downloaded from this repository release page.
+
+## First Setup
+
+Open the app and click **Settings**.
+
+Fill in the required fields:
+
+- **Company code**: your Genyo company code.
+- **Access Number**: your Genyo access number.
+- **2Captcha API key**: the API key used for reCAPTCHA solving.
+
+Configure the schedule:
+
+- **Clock In**: scheduled clock-in time.
+- **Clock Out**: scheduled clock-out time.
+- **Weekdays**: days when both scheduled operations should run.
+
+Browser and notification settings:
+
+- **Windows notifications**: keep enabled if you want Windows notifications.
+- **Headless browser**: keep enabled for normal background use.
+- **Browser channel**: choose Microsoft Edge or Google Chrome.
+- **Browser executable path**: optional. Only fill this if you need to use another Chromium-based browser executable. When filled, it overrides Browser channel.
+
+Click **Save** after changing settings.
+
+## Safe Mode and Real Mode
+
+The app has two execution modes.
 
 ### Safe Mode
 
-Use o **Safe Mode** para testar.
+Use **Safe Mode** to test. The app runs the flow but blocks the final confirmation click, so no time record is submitted.
 
-Nesse modo, o aplicativo percorre o fluxo, mas nao confirma o clique final de registro. E o modo mais seguro para validar credenciais, navegador e comportamento geral.
+Recommended use:
 
-Recomendacao: sempre teste em Safe Mode antes de usar o modo real.
+- after the first setup;
+- after changing credentials;
+- after changing browser settings;
+- whenever you want to confirm the flow before using Real Mode.
 
 ### Real Mode
 
-Use o **Real Mode** somente quando quiser executar a entrada ou saida de verdade.
+Use **Real Mode** only when you want the app to submit the real Genyo clock-in or clock-out action.
 
-Nesse modo, o aplicativo pode concluir o registro real no Genyo.
+The Scheduler must run in Real Mode. If Safe Mode is active, the app blocks Scheduler start to avoid a wrong background setup.
 
-O Scheduler so deve ser iniciado em Real Mode. Se o Safe Mode estiver ativo, o aplicativo bloqueia o Scheduler para evitar uma configuracao incorreta.
+## Daily Use
 
-## Uso diario
+There are two main ways to use the app.
 
-Existem dois usos principais no dia a dia.
+### Manual Operation
 
-### Disparo manual
+Use this when you want to run Clock In or Clock Out manually.
 
-Use quando quiser registrar entrada ou saida manualmente, sem deixar o Scheduler ativo.
+1. Open the app.
+2. Confirm that Settings are complete.
+3. Test with Safe Mode if needed.
+4. Switch to Real Mode.
+5. Click **Run Clock In (Real Mode)** or **Run Clock Out (Real Mode)**.
+6. Check **Activity** for the operation status.
 
-1. Abra o aplicativo.
-2. Confirme se a configuracao esta preenchida.
-3. Teste em Safe Mode, se necessario.
-4. Altere para Real Mode.
-5. Clique em **Rodar entrada em Real Mode** ou **Rodar saida em Real Mode**.
-6. Aguarde a operacao terminar e confira o console de logs.
+### Scheduler in Background
 
-### Scheduler em segundo plano
+Use this when you want the app to wait for the configured times.
 
-Use quando quiser deixar o aplicativo aguardando os horarios configurados.
+1. Open the app.
+2. Confirm that Settings are complete.
+3. Keep **Headless browser** enabled for background use.
+4. Switch to Real Mode.
+5. Click **Start scheduler**.
+6. The app will move to the Windows tray and keep running in the background.
 
-1. Abra o aplicativo.
-2. Confirme se a configuracao esta preenchida.
-3. Mantenha `HEADLESS=true` para execucao em segundo plano.
-4. Altere para Real Mode.
-5. Clique em **Iniciar** no painel do Scheduler.
-6. O aplicativo sera enviado para segundo plano e continuara ativo na bandeja do Windows.
+You only need to start the Scheduler once. It keeps running until you manually stop it from the app or from the Windows tray.
 
-Voce precisa iniciar o Scheduler uma vez. Depois disso, ele continua rodando ate voce decidir parar manualmente pelo aplicativo ou pela bandeja do Windows.
+The main screen shows:
 
-Quando o Scheduler estiver ativo, ele aguardara os horarios de entrada e saida configurados.
+- whether the Scheduler is active;
+- the last Clock In and Clock Out operation;
+- the next scheduled Clock In and Clock Out operation;
+- whether the last operation succeeded or failed.
 
-A tela mostra:
+## Windows Tray
 
-- se o Scheduler esta ativo;
-- a ultima operacao de entrada e saida;
-- a proxima operacao prevista;
-- se a ultima execucao foi concluida com sucesso ou falhou.
+When the Scheduler is active, the app can stay in the Windows tray.
 
-## Bandeja do Windows
+From the tray you can:
 
-Ao iniciar o Scheduler, o aplicativo pode ficar em segundo plano na bandeja do Windows.
+- reopen the app;
+- stop the Scheduler;
+- quit the app.
 
-Pela bandeja voce pode:
+If the computer restarts, the app tries to restore the Scheduler automatically if it was active before and was not manually stopped.
 
-- abrir novamente a tela do aplicativo;
-- parar o Scheduler;
-- sair do aplicativo.
+## Updates
 
-Se o computador for reiniciado, o aplicativo tenta reativar o Scheduler automaticamente, desde que ele tenha sido iniciado anteriormente e nao tenha sido parado manualmente.
+The app can check for new versions from GitHub Releases.
 
-## Atualizacoes
+Use **Check for updates** in the app.
 
-O aplicativo verifica se existe uma nova versao disponivel.
+Before installing an update:
 
-Na tela, use **Verificar atualizacoes** para consultar manualmente.
+1. Stop the Scheduler.
+2. Wait for any running operation to finish.
+3. Download and install the update from the app when prompted.
+4. Reopen the app and confirm Settings.
 
-Boas praticas antes de atualizar:
+Normal updates preserve local Settings, logs, and Scheduler state.
 
-1. Pare o Scheduler.
-2. Feche operacoes em andamento.
-3. Baixe e instale a atualizacao pelo proprio aplicativo quando ela aparecer.
-4. Abra o aplicativo novamente e confira a configuracao.
+## Local Files
 
-O aplicativo preserva os arquivos locais de configuracao e logs durante atualizacoes normais.
-
-## Boas praticas
-
-- Mantenha seus dados de configuracao protegidos.
-- Nao compartilhe o arquivo `genyo-config.txt`.
-- Use Safe Mode depois de qualquer alteracao na configuracao.
-- Evite fechar o navegador enquanto uma operacao estiver em andamento.
-- Pare o Scheduler antes de instalar atualizacoes.
-- Confira os logs na tela se alguma operacao falhar.
-- Mantenha o computador ligado e conectado a internet nos horarios agendados.
-
-## Problemas comuns
-
-### O Scheduler nao inicia
-
-Verifique se:
-
-- os campos obrigatorios foram preenchidos em **Configurar**;
-- o aplicativo esta em Real Mode;
-- os horarios de entrada e saida estao configurados;
-- o navegador configurado esta disponivel no Windows.
-
-### O navegador nao abriu
-
-Abra **Configurar** e revise as opcoes relacionadas ao navegador.
-
-Em muitos casos, usar:
+The app stores local data in your Windows user profile, usually under:
 
 ```text
-PLAYWRIGHT_BROWSER_CHANNEL=msedge
-HEADLESS=true
+AppData\Roaming\genyo-point-automation
 ```
 
-usa o Microsoft Edge instalado no Windows em segundo plano. Para diagnostico visual, use `HEADLESS=false` temporariamente.
+Important folders:
 
-### A operacao falhou
+- `config\genyo-config.txt`: local app settings;
+- `logs\`: user-friendly and technical logs;
+- `state\`: Scheduler state.
 
-Confira o console de logs na tela do aplicativo. Ele mostra mensagens simplificadas para orientar o uso.
+Do not share `genyo-config.txt`. It contains sensitive access details.
 
-Se necessario, tente executar primeiro em Safe Mode para validar o fluxo sem registrar ponto.
+## Good Practices
 
-### Fechei o navegador durante a execucao
+- Keep your Genyo access details private.
+- Keep the 2Captcha API key private.
+- Use Safe Mode after changing Settings.
+- Keep Headless browser enabled for Scheduler use.
+- Do not close the browser while an operation is running.
+- Stop the Scheduler before installing updates.
+- Keep the computer on and connected to the internet at scheduled times.
 
-O aplicativo tratara isso como uma operacao interrompida ou falha. Execute novamente quando estiver pronto.
+## Common Issues
 
-## Arquivos locais
+### Signature is not valid before installing the certificate
 
-O aplicativo guarda configuracoes e logs na pasta de dados do usuario no Windows, normalmente em:
+This is expected with the current self-signed certificate flow. Install `genyo-self-signed-code-signing.cer` into `CurrentUser\Root` and `CurrentUser\TrustedPublisher`, then validate the setup again.
+
+### Signature is still not valid after installing the certificate
+
+Check that:
+
+- PowerShell was opened as Administrator;
+- the `.cer` file came from the same release page;
+- the setup file name and path are correct;
+- you ran both `Import-Certificate` commands.
+
+### Scheduler does not start
+
+Check that:
+
+- Settings are complete;
+- the app is in Real Mode;
+- Clock In and Clock Out times are configured;
+- the configured browser is available on Windows.
+
+### Browser does not open
+
+Open **Settings** and check Browser channel or Browser executable path.
+
+For most Windows users, Microsoft Edge works with:
 
 ```text
-AppData/Roaming/genyo-point-automation
+Browser channel: Microsoft Edge
+Browser executable path: empty
 ```
 
-Arquivos importantes:
+### Operation failed
 
-- `config/genyo-config.txt`: configuracao do aplicativo;
-- `logs/`: logs operacionais e tecnicos;
-- `state/`: estado interno do Scheduler.
+Check **Activity** in the app. It shows simplified messages for normal use.
 
-Nao apague esses arquivos sem necessidade. Eles ajudam o aplicativo a manter configuracoes, historico e funcionamento em segundo plano.
+If needed, run the same operation in Safe Mode first.
+
+### Browser was closed during execution
+
+The app treats this as an interrupted operation. Run the operation again when ready.
