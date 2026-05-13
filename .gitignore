@@ -1,0 +1,26 @@
+# Build outputs
+*.exe
+*.exe.blockmap
+*.blockmap
+*.yml
+*.yaml
+*.AppImage
+*.tar.gz
+*.zip
+
+# Unpacked app folders
+win-unpacked/
+linux-unpacked/
+mac*/
+*.dmg
+
+# Electron builder internals
+builder-debug.yml
+builder-effective-config.yaml
+.icon-ico/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
