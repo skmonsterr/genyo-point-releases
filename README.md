@@ -49,7 +49,7 @@ Essas informacoes sao necessarias para que o aplicativo consiga acessar o Genyo 
 Tambem revise estes campos:
 
 ```text
-HEADLESS=false
+HEADLESS=true
 SCHEDULE_ENTRY=0 9 * * 1-5
 SCHEDULE_EXIT=0 18 * * 1-5
 TIMEZONE=America/Sao_Paulo
@@ -57,12 +57,14 @@ TIMEZONE=America/Sao_Paulo
 
 Uso recomendado:
 
-- `HEADLESS=false`: abre o navegador na tela, facilitando acompanhar o que esta acontecendo.
+- `HEADLESS=true`: executa o navegador em segundo plano, recomendado para uso diario.
 - `SCHEDULE_ENTRY`: horario agendado para entrada.
 - `SCHEDULE_EXIT`: horario agendado para saida.
 - `TIMEZONE`: fuso horario usado pelo agendamento.
 
 Depois de editar, clique em **Salvar**.
+
+Se precisar acompanhar visualmente o navegador durante um teste, altere temporariamente para `HEADLESS=false`. Para o uso diario com Scheduler, mantenha `HEADLESS=true`.
 
 ## Modos do aplicativo
 
@@ -86,14 +88,31 @@ O Scheduler so deve ser iniciado em Real Mode. Se o Safe Mode estiver ativo, o a
 
 ## Uso diario
 
-Fluxo recomendado para o dia a dia:
+Existem dois usos principais no dia a dia.
+
+### Disparo manual
+
+Use quando quiser registrar entrada ou saida manualmente, sem deixar o Scheduler ativo.
 
 1. Abra o aplicativo.
 2. Confirme se a configuracao esta preenchida.
-3. Teste entrada e saida em Safe Mode, se necessario.
+3. Teste em Safe Mode, se necessario.
+4. Altere para Real Mode.
+5. Clique em **Rodar entrada em Real Mode** ou **Rodar saida em Real Mode**.
+6. Aguarde a operacao terminar e confira o console de logs.
+
+### Scheduler em segundo plano
+
+Use quando quiser deixar o aplicativo aguardando os horarios configurados.
+
+1. Abra o aplicativo.
+2. Confirme se a configuracao esta preenchida.
+3. Mantenha `HEADLESS=true` para execucao em segundo plano.
 4. Altere para Real Mode.
 5. Clique em **Iniciar** no painel do Scheduler.
 6. O aplicativo sera enviado para segundo plano e continuara ativo na bandeja do Windows.
+
+Voce precisa iniciar o Scheduler uma vez. Depois disso, ele continua rodando ate voce decidir parar manualmente pelo aplicativo ou pela bandeja do Windows.
 
 Quando o Scheduler estiver ativo, ele aguardara os horarios de entrada e saida configurados.
 
@@ -160,10 +179,10 @@ Em muitos casos, usar:
 
 ```text
 PLAYWRIGHT_BROWSER_CHANNEL=msedge
-HEADLESS=false
+HEADLESS=true
 ```
 
-ajuda a acompanhar a execucao usando o Microsoft Edge instalado no Windows.
+usa o Microsoft Edge instalado no Windows em segundo plano. Para diagnostico visual, use `HEADLESS=false` temporariamente.
 
 ### A operacao falhou
 
