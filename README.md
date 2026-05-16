@@ -1,5 +1,5 @@
 # Genyo Point Automation
-<!-- GENYO_LATEST_VERSION: v1.0.9 -->
+<!-- GENYO_LATEST_VERSION: v1.0.11 -->
 
 Genyo Point Automation is a Windows desktop app for running and scheduling Genyo clock-in and clock-out operations from your computer.
 
@@ -25,7 +25,7 @@ Open the latest release page:
 https://github.com/skmonsterr/genyo-point-releases/releases/latest
 ```
 
-Current latest version: `v1.0.9`.
+Current latest version: `v1.0.11`.
 
 Download these two files:
 
@@ -52,7 +52,7 @@ The examples below assume both files are in your Downloads folder and use the cu
 Run:
 
 ```powershell
-Get-AuthenticodeSignature "$env:USERPROFILE\Downloads\genyo-point-automation-setup-v1.0.9-win32-x64.exe" | Format-List
+Get-AuthenticodeSignature "$env:USERPROFILE\Downloads\genyo-point-automation-setup-v1.0.11-win32-x64.exe" | Format-List
 ```
 
 Expected result before installing the certificate:
@@ -62,7 +62,7 @@ SignerCertificate      : [certificate information]
 TimeStamperCertificate :
 Status                 : UnknownError
 StatusMessage          : A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.
-Path                   : C:\Users\<your-user>\Downloads\genyo-point-automation-setup-v1.0.9-win32-x64.exe
+Path                   : C:\Users\<your-user>\Downloads\genyo-point-automation-setup-v1.0.11-win32-x64.exe
 SignatureType          : Authenticode
 IsOSBinary             : False
 ```
@@ -112,7 +112,7 @@ Thumbprint                                Subject
 Run:
 
 ```powershell
-Get-AuthenticodeSignature "$env:USERPROFILE\Downloads\genyo-point-automation-setup-v1.0.9-win32-x64.exe" | Format-List
+Get-AuthenticodeSignature "$env:USERPROFILE\Downloads\genyo-point-automation-setup-v1.0.11-win32-x64.exe" | Format-List
 ```
 
 Expected result after installing the certificate:
@@ -122,7 +122,7 @@ SignerCertificate      : [certificate information]
 TimeStamperCertificate :
 Status                 : Valid
 StatusMessage          : Signature verified.
-Path                   : C:\Users\<your-user>\Downloads\genyo-point-automation-setup-v1.0.9-win32-x64.exe
+Path                   : C:\Users\<your-user>\Downloads\genyo-point-automation-setup-v1.0.11-win32-x64.exe
 SignatureType          : Authenticode
 IsOSBinary             : False
 ```
@@ -318,6 +318,7 @@ If needed, run the same operation in Safe Mode first.
 ### Browser was closed during execution
 
 The app treats this as an interrupted operation. Run the operation again when ready.
+
 
 
 
